@@ -1,0 +1,14 @@
+{
+  "httpMethod": "GET",
+  "path": "/orders/cust-123",
+  "pathParameters": {
+    "customerId": "cust-123"
+  },
+  "queryStringParameters": {
+    "limit": "10"
+  },
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": null
+}

@@ -1,0 +1,13 @@
+{
+  "httpMethod": "PUT",
+  "path": "/orders/cust-123/ORDER_ID_HERE",
+  "pathParameters": {
+    "customerId": "cust-123",
+    "orderId": "ORDER_ID_HERE"
+  },
+  "queryStringParameters": null,
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": "{\"status\": \"SHIPPED\"}"
+}

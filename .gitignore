@@ -1,0 +1,20 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.aws-sam/
+.venv/
+venv/
+*.egg-info/
+.env
+samconfig.toml.bak
+
+# Terraform
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/build/
+terraform/*.tfstate
+terraform/*.tfstate.*
+terraform/*.tfvars
+!terraform/terraform.tfvars.example
+terraform/crash.log
+terraform/tfplan

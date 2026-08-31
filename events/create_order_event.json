@@ -1,0 +1,10 @@
+{
+  "httpMethod": "POST",
+  "path": "/orders",
+  "pathParameters": null,
+  "queryStringParameters": null,
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": "{\"customerId\": \"cust-123\", \"items\": [{\"sku\": \"SKU-1\", \"name\": \"Widget\", \"quantity\": 2, \"price\": 9.99}], \"shippingAddress\": {\"line1\": \"123 Main St\", \"city\": \"Franklin\", \"state\": \"TN\", \"zip\": \"37064\"}}"
+}

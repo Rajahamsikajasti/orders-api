@@ -1,0 +1,9 @@
+aws_region   = "us-east-1"
+project_name = "order-api"
+stage_name   = "dev"
+
+tags = {
+  Project     = "order-api"
+  ManagedBy   = "terraform"
+  Environment = "dev"
+}

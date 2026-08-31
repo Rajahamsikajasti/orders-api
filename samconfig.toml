@@ -1,0 +1,14 @@
+version = 0.1
+
+[default.deploy.parameters]
+stack_name = "order-api"
+resolve_s3 = true
+s3_prefix = "order-api"
+region = "us-east-1"
+capabilities = "CAPABILITY_IAM"
+confirm_changeset = true
+parameter_overrides = "StageName=\"dev\""
+
+[default.sync.parameters]
+stack_name = "order-api"
+watch = true

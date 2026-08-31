@@ -1,0 +1,171 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Serverless e-commerce Order API - AWS Lambda (Python), API Gateway, DynamoDB.
+  Endpoints: create order, get orders by customer ID, update order status.
+
+Globals:
+  Function:
+    Runtime: python3.12
+    Timeout: 10
+    MemorySize: 256
+    Tracing: Active
+    Environment:
+      Variables:
+        TABLE_NAME: !Ref OrdersTable
+        POWERTOOLS_SERVICE_NAME: order-api
+        LOG_LEVEL: INFO
+  Api:
+    TracingEnabled: true
+    Cors:
+      AllowMethods: "'GET,POST,PUT,OPTIONS'"
+      AllowHeaders: "'Content-Type,Authorization'"
+      AllowOrigin: "'*'"
+
+Parameters:
+  StageName:
+    Type: String
+    Default: dev
+    Description: API Gateway deployment stage name
+
+Resources:
+
+  OrderApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref StageName
+      TracingEnabled: true
+
+  # ---------------------------------------------------------------------
+  # DynamoDB Table
+  #
+  # Single-table design:
+  #   PK (partition key): CustomerId   -> "CUSTOMER#<id>"
+  #   SK (sort key):      OrderId      -> "ORDER#<id>"
+  #
+  # This makes "get all orders for a customer" a cheap, efficient
+  # Query on the partition key (no scan needed).
+  #
+  # A GSI (OrderIndex) inverts the keys so a single order can be
+  # looked up / updated directly by OrderId alone, without needing
+  # to know the CustomerId up front (needed for the status-update
+  # endpoint's PK lookup pattern in some clients, and for future
+  # order-detail-by-id endpoints).
+  # ---------------------------------------------------------------------
+  OrdersTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: !Sub '${AWS::StackName}-orders-table'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: OrderId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: OrderIndex
+          KeySchema:
+            - AttributeName: OrderId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+
+  # ---------------------------------------------------------------------
+  # Lambda Functions
+  # ---------------------------------------------------------------------
+
+  CreateOrderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-create-order'
+      Handler: handlers.create_order.lambda_handler
+      CodeUri: src/
+      Description: Creates a new order in DynamoDB
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref OrdersTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref OrdersTable
+      Events:
+        CreateOrder:
+          Type: Api
+          Properties:
+            RestApiId: !Ref OrderApi
+            Path: /orders
+            Method: post
+
+  GetOrdersByCustomerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-get-orders-by-customer'
+      Handler: handlers.get_orders.lambda_handler
+      CodeUri: src/
+      Description: Retrieves all orders for a given customer ID (partition-key query)
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref OrdersTable
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref OrdersTable
+      Events:
+        GetOrdersByCustomer:
+          Type: Api
+          Properties:
+            RestApiId: !Ref OrderApi
+            Path: /orders/{customerId}
+            Method: get
+        GetSingleOrder:
+          Type: Api
+          Properties:
+            RestApiId: !Ref OrderApi
+            Path: /orders/{customerId}/{orderId}
+            Method: get
+
+  UpdateOrderStatusFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-update-order-status'
+      Handler: handlers.update_status.lambda_handler
+      CodeUri: src/
+      Description: Updates the status of an existing order
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref OrdersTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref OrdersTable
+      Events:
+        UpdateOrderStatus:
+          Type: Api
+          Properties:
+            RestApiId: !Ref OrderApi
+            Path: /orders/{customerId}/{orderId}
+            Method: put
+
+Outputs:
+  ApiUrl:
+    Description: 'Base URL for the Order API'
+    Value: !Sub 'https://${OrderApi}.execute-api.${AWS::Region}.amazonaws.com/${StageName}'
+  OrdersTableName:
+    Description: 'DynamoDB table name'
+    Value: !Ref OrdersTable
+  CreateOrderFunctionArn:
+    Value: !GetAtt CreateOrderFunction.Arn
+  GetOrdersByCustomerFunctionArn:
+    Value: !GetAtt GetOrdersByCustomerFunction.Arn
+  UpdateOrderStatusFunctionArn:
+    Value: !GetAtt UpdateOrderStatusFunction.Arn
