@@ -39,7 +39,7 @@ resource "aws_lambda_function" "create_order" {
     variables = {
       TABLE_NAME              = aws_dynamodb_table.orders.name
       POWERTOOLS_SERVICE_NAME = "order-api"
-      LOG_LEVEL                = var.log_level
+      LOG_LEVEL               = var.log_level
     }
   }
 
@@ -72,7 +72,7 @@ resource "aws_lambda_function" "get_orders" {
     variables = {
       TABLE_NAME              = aws_dynamodb_table.orders.name
       POWERTOOLS_SERVICE_NAME = "order-api"
-      LOG_LEVEL                = var.log_level
+      LOG_LEVEL               = var.log_level
     }
   }
 
@@ -104,7 +104,7 @@ resource "aws_lambda_function" "update_status" {
     variables = {
       TABLE_NAME              = aws_dynamodb_table.orders.name
       POWERTOOLS_SERVICE_NAME = "order-api"
-      LOG_LEVEL                = var.log_level
+      LOG_LEVEL               = var.log_level
     }
   }
 

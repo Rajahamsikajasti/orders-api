@@ -183,5 +183,5 @@ resource "aws_api_gateway_stage" "order_api" {
   stage_name    = var.stage_name
 
   xray_tracing_enabled = true
-  tags                  = var.tags
+  tags                 = var.tags
 }
