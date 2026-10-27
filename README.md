@@ -1,5 +1,10 @@
 # Serverless E-Commerce Order API
 
+[![CI](https://github.com/Rajahamsikajasti/orders-api/actions/workflows/ci.yml/badge.svg)](https://github.com/Rajahamsikajasti/orders-api/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/python-3.12-blue)
+![Terraform](https://img.shields.io/badge/IaC-Terraform-7B42BC)
+![AWS](https://img.shields.io/badge/AWS-Lambda%20%7C%20DynamoDB-FF9900)
+
 A serverless order management API built with **AWS Lambda (Python 3.12)**,
 **Amazon API Gateway**, and **Amazon DynamoDB**, deployed with the **AWS SAM**
 (Serverless Application Model) CLI.
